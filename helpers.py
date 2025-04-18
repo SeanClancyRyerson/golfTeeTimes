@@ -13,11 +13,11 @@ def get_weekend_dates() -> list:
     weekends = []
     today = datetime.now()
     # this saturday 
-    t = timedelta((12 - today.weekday()) % 7)
-    weekends.append((today + t).strftime('%m-%d-%Y'))
+    # t = timedelta((12 - today.weekday()) % 7)
+    # weekends.append((today + t).strftime('%m-%d-%Y'))
     # this sunday 
-    t = timedelta((13 - today.weekday()) % 7)
-    weekends.append((today + t).strftime('%m-%d-%Y'))
+    # t = timedelta((13 - today.weekday()) % 7)
+    # weekends.append((today + t).strftime('%m-%d-%Y'))
     # next saturday 
     t = timedelta((12 - today.weekday()) % 7 + 7)
     weekends.append((today + t).strftime('%m-%d-%Y'))
@@ -37,3 +37,6 @@ def within_time_range(string_datetime: str, start_time: datetime, end_time: date
         return False
     
 
+def console_log(log_msg: str) -> str:
+    current_time = str(datetime.now().strftime('%X'))
+    print(f"{current_time}: {log_msg}")

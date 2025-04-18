@@ -4,6 +4,7 @@ from email.message import EmailMessage
 
 # local imports
 import tee_times as tee
+import helpers as hlpr
 import private as pvt
 
 """
@@ -11,9 +12,9 @@ file for email related functions
 """
 
 def send_email(tee_times: list) -> bool:
-    print(f"Sending email...")
+    hlpr.console_log("Sending email...")
     if len(tee_times) == 0:
-        print("No good tee times. Email not sent...")
+        hlpr.console_log("No good tee times. Email not sent...")
         return False
     else:
         try:
@@ -28,7 +29,7 @@ def send_email(tee_times: list) -> bool:
                 s.login(pvt.TEE_TIME_EMAIL, pvt.GSMTP_KEY)
                 s.sendmail(pvt.TEE_TIME_EMAIL, pvt.SCR_EMAIL, str(tee_time_email))
                 s.quit()
-                print("Email sent!")
+                hlpr.console_log("Email sent!")
 
             return True
         except Exception as e:

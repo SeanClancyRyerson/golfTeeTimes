@@ -18,7 +18,7 @@ def get_tee_times(course: str) -> list:
     weekends = hlpr.get_weekend_dates()
     for day in weekends:
         try:
-            print(f"Fetching tee times for {course} on {day}...")
+            hlpr.console_log(f"Fetching tee times for {course} on {day}...")
             r = requests.get(foreUP.get_foreUP_url(course, day), headers=foreUP.get_foreUP_headers()).json()
             for tee in r:
                 tee_time_obj = {}
@@ -41,13 +41,13 @@ def get_tee_times(course: str) -> list:
 
 def get_filtered_tee_times(tee_time_list: list, start_time: datetime = dt.time(0,0,0), end_time: datetime = dt.time(23,59,59), num_players: int = 1) -> list:
     filtered_tee_times = []
-    print(f"Searching for tee times for {num_players} player(s) between {start_time} and {end_time}...")
+    hlpr.console_log(f"Searching for tee times for {num_players} player(s) between {start_time} and {end_time}...")
     for tee_time_obj in tee_time_list:
         if hlpr.within_time_range(tee_time_obj[const.TEE_TIME], start_time, end_time) and tee_time_obj[const.AVAILABLE_SPOTS] >= num_players:
             filtered_tee_times.append(tee_time_obj)
     
     if len(filtered_tee_times) != 0:
-        print(f"Found {filtered_tee_times} tee time(s) meeting requirements!")
+        hlpr.console_log(f"Found {filtered_tee_times} tee time(s) meeting requirements!")
 
     return filtered_tee_times
 
