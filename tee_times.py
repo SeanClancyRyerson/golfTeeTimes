@@ -36,6 +36,7 @@ def get_tee_times(course: str) -> list:
         except requests.exceptions as e:
             print(e)
         time.sleep(3)
+    hlpr.console_log(f"A total of {len(tee_times)} tee times were fetched...")
     return tee_times
 
 

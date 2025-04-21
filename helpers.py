@@ -16,14 +16,14 @@ def get_weekend_dates() -> list:
     # t = timedelta((12 - today.weekday()) % 7)
     # weekends.append((today + t).strftime('%m-%d-%Y'))
     # this sunday 
-    # t = timedelta((13 - today.weekday()) % 7)
+    t = timedelta((13 - today.weekday()) % 7)
+    weekends.append((today + t).strftime('%m-%d-%Y'))
+    # next saturday 
+    # t = timedelta((12 - today.weekday()) % 7 + 7)
     # weekends.append((today + t).strftime('%m-%d-%Y'))
-    # next saturday 
-    t = timedelta((12 - today.weekday()) % 7 + 7)
-    weekends.append((today + t).strftime('%m-%d-%Y'))
-    # next saturday 
-    t = timedelta((13 - today.weekday()) % 7 + 7)
-    weekends.append((today + t).strftime('%m-%d-%Y'))
+    # next sunday 
+    # t = timedelta((13 - today.weekday()) % 7 + 7)
+    # weekends.append((today + t).strftime('%m-%d-%Y'))
 
     return weekends
     
