@@ -20,6 +20,8 @@ START_TIME = dt.time(8,30,0)
 END_TIME = dt.time(11,30,0)
 MIN_NUM_PLAYERS = 3
 
+# tee.get_tee_times(const.ROCKLAND)
+
 while True:
     hlpr.console_log("Fetching new times...")
     hendricks_times = tee.get_tee_times(const.HENDRICKS)

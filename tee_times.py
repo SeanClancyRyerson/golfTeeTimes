@@ -19,7 +19,12 @@ def get_tee_times(course: str) -> list:
     for day in weekends:
         try:
             hlpr.console_log(f"Fetching tee times for {course} on {day}...")
-            r = requests.get(foreUP.get_foreUP_url(course, day), headers=foreUP.get_foreUP_headers()).json()
+            
+            if const.foreUp_mappings[course][const.X_AUTH]:
+                r = requests.get(foreUP.get_foreUP_url(course, day), headers=foreUP.get_foreUP_headers()).json()
+            else:
+                r = requests.get(foreUP.get_foreUP_url(course, day)).json()
+
             for tee in r:
                 tee_time_obj = {}
                 try:
