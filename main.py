@@ -18,7 +18,7 @@ main driving file
 # PARAMS FOR FILTERING
 START_TIME = dt.time(8,30,0)
 END_TIME = dt.time(11,30,0)
-MIN_NUM_PLAYERS = 3
+MIN_NUM_PLAYERS = 1
 
 # tee.get_tee_times(const.ROCKLAND)
 
