@@ -17,8 +17,11 @@ main driving file
 
 # PARAMS FOR FILTERING
 START_TIME = dt.time(8,30,0)
-END_TIME = dt.time(11,30,0)
+END_TIME = dt.time(11,11,0)
 MIN_NUM_PLAYERS = 1
+
+MIN_WAIT = 3
+MAX_WAIT = 10
 
 # tee.get_tee_times(const.ROCKLAND)
 
@@ -31,6 +34,6 @@ while True:
     res = email_hlpr.send_email(filtered_tee_times)
     if res:
         break
-    sleep_time_seconds = random.random()*900 + 450
+    sleep_time_seconds = hlpr.get_wait_time(MIN_WAIT, MAX_WAIT)
     hlpr.console_log(f"Sleeping for {(sleep_time_seconds/60):.1f} minutes")
     time.sleep(sleep_time_seconds)

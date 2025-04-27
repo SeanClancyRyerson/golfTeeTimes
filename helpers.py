@@ -1,5 +1,6 @@
 # python imports
 from datetime import datetime, timedelta
+import random
 
 # local imports
 import const as const
@@ -40,3 +41,10 @@ def within_time_range(string_datetime: str, start_time: datetime, end_time: date
 def console_log(log_msg: str) -> str:
     current_time = str(datetime.now().strftime('%X'))
     print(f"{current_time}: {log_msg}")
+
+
+def get_wait_time(min_wait: int, max_wait: int) -> int:
+    """
+    values passed in should be in minutes
+    """    
+    return random.uniform(min_wait, max_wait)*60
