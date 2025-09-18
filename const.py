@@ -4,7 +4,9 @@ file for defining constants
 
 HENDRICKS = "Hendricks Field Golf Course"
 FRANCIS = "Francis A. Byrne Golf Course"
-ROCKLAND = "Rockland Lake State Park Championship Golf Course"
+ROCKLANDCHAMP = "Rockland Lake State Park Championship Golf Course"
+#probably don't need this for the par3, but because it has so many available tee times, helped for testing
+ROCKLANDPAR3 = "Rockland Lake State Park Executive Golf Course"
 
 BOOKING_CLASS = 'booking_class'
 SCHEDULE_ID = 'schedule_id'
@@ -21,9 +23,14 @@ foreUp_mappings = {
             SCHEDULE_ID: 11078,
             X_AUTH: True
         },
-        ROCKLAND: {
+        ROCKLANDCHAMP: {
             BOOKING_CLASS: 51472,
             SCHEDULE_ID: 2442,
+            X_AUTH: False
+        },
+        ROCKLANDPAR3: {
+            BOOKING_CLASS: 51484,
+            SCHEDULE_ID: 2458,
             X_AUTH: False
         }
     }
