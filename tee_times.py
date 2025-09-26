@@ -13,9 +13,12 @@ import foreUP as foreUP
 file for tee_time specific functions
 """
 
-def get_tee_times(course: str) -> list:
+def get_tee_times(course: str, date='') -> list:
     tee_times = []
-    weekends = hlpr.get_weekend_dates()
+    if date == '':
+        weekends = hlpr.get_weekend_dates()
+    else:
+        weekends = date
     for day in weekends:
         try:
             hlpr.console_log(f"Fetching tee times for {course} on {day}...")

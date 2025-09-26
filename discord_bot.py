@@ -1,16 +1,44 @@
 import private as pvt
 import const as const
+import tee_times as tee
+import helpers as hlpr
 
 import discord
 from discord import app_commands
 from discord.ext import commands
 import datetime
+import time
+import asyncio
 
 TOKEN = pvt.discord_bot_token
 GUILD_ID = 1161391779845783782 #niccy's server
 
 intents = discord.Intents.default()
 bot = commands.Bot(intents=intents, command_prefix=None)
+
+async def finder_loop(date, start_time, end_time, players, courses, user, loop_end):
+    while True:
+        all_times = []
+        for course in courses:
+            course_key = getattr(const, const.COURSES_DICT[course])
+            all_times += tee.get_tee_times(course_key, date)
+        filtered_tee_times = tee.get_filtered_tee_times(all_times, start_time, end_time, players)
+        if len(filtered_tee_times) == 0:
+            if datetime.datetime.now() > loop_end:
+                await user.send("No tee times found before end time. Stopping search.")
+                hlpr.console_log(f"No tee times found before end time for {str(user.name)}. Stopping search.")  
+                break
+            sleep_time_seconds = hlpr.get_wait_time(1, 5)
+            hlpr.console_log(f"No good tee times found for {str(user.name)}. Sleeping for {(sleep_time_seconds/60):.1f} minutes")
+            await asyncio.sleep(sleep_time_seconds)
+        else:
+            
+            if len(filtered_tee_times) > 10:
+                filtered_tee_times = filtered_tee_times[:10] #limit to 10 results to avoid spam
+            await user.send(
+                f"Found {len(filtered_tee_times)} available tee times. Showing first 10 available:\n"
+                f"{tee.tee_times_to_string(filtered_tee_times)}")
+            break
 
 #Dropdown setup
 class CourseSelect(discord.ui.Select):
@@ -101,14 +129,17 @@ async def find(
             f"🕒 Start: **{start_dt.strftime('%H:%M')}**\n"
             f"🕒 End: **{end_dt.strftime('%H:%M')}**\n"
             f"⛳️ Courses: **{', '.join(courses)}**\n"
-            f"👥 Players: **{players}**",
+            f"👥 Players: **{players}**\n"
+            f"🔎 Searching for available tee times...",
             ephemeral=True # ephemeral so only the user who sent the command sees it
         )
+        find_date = [picked_date.strftime('%m-%d-%Y')]
+        bot.loop.create_task(finder_loop(find_date, start, end, players, courses, interaction.user, end_dt))
     else:
         await interaction.followup.send(
-            "⚠️ You didn’t select any categories in time.",
+            "⚠️ You didn't select any categories in time.",
             ephemeral=True
-        )
+        ) 
 
 # --- Bot startup ---
 @bot.event

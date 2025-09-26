@@ -2,6 +2,13 @@
 file for defining constants
 """
 
+COURSES_DICT = {
+    "Hendricks Field Golf Course": "HENDRICKS",
+    "Francis A. Byrne Golf Course": "FRANCIS",
+    "Rockland Lake State Park Championship Golf Course": "ROCKLANDCHAMP",
+    "Rockland Lake State Park Executive Golf Course": "ROCKLANDPAR3"
+}
+
 HENDRICKS = "Hendricks Field Golf Course"
 FRANCIS = "Francis A. Byrne Golf Course"
 ROCKLANDCHAMP = "Rockland Lake State Park Championship Golf Course"
