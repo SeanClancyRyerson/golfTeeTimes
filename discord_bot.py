@@ -36,7 +36,7 @@ async def finder_loop(job, date, start_time, end_time, players, courses, user, l
                     hlpr.console_log(f"No tee times found before end time for {str(user.name)}. Stopping search.")
 
                     break
-                sleep_time_seconds = hlpr.get_wait_time(0,1)
+                sleep_time_seconds = hlpr.get_wait_time(1,5)
                 hlpr.console_log(f"No good tee times found for {str(user.name)}. Sleeping for {(sleep_time_seconds/60):.1f} minutes")
                 await asyncio.sleep(sleep_time_seconds)
             else:

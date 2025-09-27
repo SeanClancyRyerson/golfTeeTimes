@@ -1,0 +1,11 @@
+# Ignore python cache and virtual envs
+__pycache__/
+.venv
+venv
+
+# Don't add private secrets into image
+private.py
+
+# Git and editor files
+.git
+.gitignore
