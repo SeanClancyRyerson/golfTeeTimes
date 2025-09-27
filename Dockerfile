@@ -1,4 +1,4 @@
-FROM python:3.11-slim
+FROM python:3.13-slim
 
 #This is to get the print()s in the python show up immediately in the docker logs
 ENV PYTHONUNBUFFERED=1
@@ -22,3 +22,6 @@ COPY . .
 
 #Run the bot
 CMD ["python", "discord_bot.py"]
+
+#command to build and push multi-arch image
+#docker buildx build --platform linux/amd64,linux/arm64 -t nickyparekh/golf-goon-finder:latest --push .
