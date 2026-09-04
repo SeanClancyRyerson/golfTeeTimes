@@ -1,0 +1,9 @@
+services:
+  golf-tee-times:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: golf-tee-times
+    restart: unless-stopped
+    volumes:
+      - ./private.py:/app/private.py:ro

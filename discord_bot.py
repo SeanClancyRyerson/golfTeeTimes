@@ -1,6 +1,7 @@
 import private as pvt
 import const as const
 import tee_times as tee
+import foreUP as foreUP
 import helpers as hlpr
 
 import discord
@@ -40,6 +41,33 @@ async def finder_loop(job, date, start_time, end_time, players, courses, user, l
                 hlpr.console_log(f"No good tee times found for {str(user.name)}. Sleeping for {(sleep_time_seconds/60):.1f} minutes")
                 await asyncio.sleep(sleep_time_seconds)
             else:
+                if job["book"]:
+                    prioritized_times = tee.prioritize_tee_times(
+                        filtered_tee_times,
+                        job["preferred_time"],
+                        start_time,
+                        end_time
+                    )
+                    for tee_time in prioritized_times:
+                        try:
+                            booking = await asyncio.to_thread(
+                                foreUP.book_tee_time,
+                                tee_time,
+                                players
+                            )
+                            await user.send(
+                                f"Booked **{booking['course_name']}** at **{booking['reservation_time']}** "
+                                f"for **{booking['player_count']} player(s)**. "
+                                f"Confirmation: `{booking['teetime_id']}`"
+                            )
+                            return
+                        except Exception as error:
+                            hlpr.console_log(
+                                f"Booking {tee_time[const.TEE_TIME]} failed for {str(user.name)}: {error}"
+                            )
+                    await user.send("Tee times were found, but all booking attempts failed.")
+                    return
+
                 '''
                 Limited this to top 10 because discord has a 2000 char limit per message
                 This isn't great because if you're searching for times across all courses
@@ -50,7 +78,8 @@ async def finder_loop(job, date, start_time, end_time, players, courses, user, l
                     filtered_tee_times = filtered_tee_times[:10] #limit to 10 results to avoid spam
                 await user.send(
                     f"Found {len(filtered_tee_times)} available tee times. Showing first 10 available:\n"
-                    f"{tee.tee_times_to_string(filtered_tee_times)}")
+                    f"{tee.tee_times_to_string(filtered_tee_times)}",
+                    view=BookTeeTimeView(filtered_tee_times, players))
                 break
     finally:
         # cleanup job when loop finishes
@@ -91,6 +120,61 @@ class CourseView(discord.ui.View):
         self.add_item(CourseSelect(date, start_dt, end_dt))
         self.selected_courses: list[str] = []
 
+
+class TeeTimeSelect(discord.ui.Select):
+    def __init__(self, tee_times):
+        options = [
+            discord.SelectOption(
+                label=f"{item[const.COURSE_NAME]} - {item[const.TEE_TIME][11:]}",
+                value=str(index)
+            )
+            for index, item in enumerate(tee_times)
+        ]
+        super().__init__(placeholder="Select a tee time to book...", options=options)
+        self.tee_times = tee_times
+
+    async def callback(self, interaction: discord.Interaction):
+        self.view.selected_tee_time = self.tee_times[int(self.values[0])]
+        self.view.book_button.disabled = False
+        await interaction.response.edit_message(view=self.view)
+
+
+class BookTeeTimeButton(discord.ui.Button):
+    def __init__(self):
+        super().__init__(label="Book selected tee time", style=discord.ButtonStyle.success, disabled=True)
+
+    async def callback(self, interaction: discord.Interaction):
+        if self.view.selected_tee_time is None:
+            await interaction.response.send_message("Select a tee time first.", ephemeral=True)
+            return
+
+        self.disabled = True
+        await interaction.response.defer()
+        try:
+            booking = await asyncio.to_thread(
+                foreUP.book_tee_time,
+                self.view.selected_tee_time,
+                self.view.players
+            )
+            await interaction.followup.send(
+                f"Booked **{booking['course_name']}** at **{booking['reservation_time']}** for "
+                f"**{booking['player_count']} player(s)**. Confirmation: `{booking['teetime_id']}`"
+            )
+            self.view.stop()
+        except Exception as error:
+            self.disabled = False
+            await interaction.followup.send(f"Booking failed: {error}", ephemeral=True)
+
+
+class BookTeeTimeView(discord.ui.View):
+    def __init__(self, tee_times, players):
+        super().__init__(timeout=300)
+        self.players = players
+        self.selected_tee_time = None
+        self.add_item(TeeTimeSelect(tee_times))
+        self.book_button = BookTeeTimeButton()
+        self.add_item(self.book_button)
+
 # --- Slash command ---
 @bot.tree.command(
     name="find",
@@ -100,25 +184,33 @@ class CourseView(discord.ui.View):
 @app_commands.describe(
     date="Enter a date (YYYY-MM-DD)",
     start_time="Enter start time (HH:MM, 24h)",
-    end_time="Enter end time (HH:MM, 24h)"
+    end_time="Enter end time (HH:MM, 24h)",
+    book="Book the best matching tee time instead of only notifying",
+    preferred_time="Preferred tee time when booking (HH:MM, 24h)"
 )
 async def find(
     interaction: discord.Interaction,
     date: str,
     start_time: str,
     end_time: str,
-    players: int
+    players: int,
+    book: bool = False,
+    preferred_time: str = None
 ):
     #Initial Command inputs
     try:
         picked_date = datetime.datetime.strptime(date, "%Y-%m-%d").date()
         start = datetime.datetime.strptime(start_time, "%H:%M").time()
         end = datetime.datetime.strptime(end_time, "%H:%M").time()
+        preferred = datetime.datetime.strptime(
+            preferred_time or start_time, "%H:%M"
+        ).time()
 
         start_dt = datetime.datetime.combine(picked_date, start)
         end_dt = datetime.datetime.combine(picked_date, end)
     except ValueError:
         await interaction.response.send_message("⚠️ Use YYYY-MM-DD for date and HH:MM for times.")
+        return
 
     #data quality checks, you'd hope the user was smart enough :D
     if start_dt <= datetime.datetime.now() or end_dt <= datetime.datetime.now():
@@ -127,6 +219,10 @@ async def find(
     
     if end_dt <= start_dt:
         await interaction.response.send_message("⚠️ End time must be after start time.")
+        return
+
+    if not start <= preferred <= end:
+        await interaction.response.send_message("⚠️ Preferred time must be inside the selected time range.")
         return
     
     if players < 1 or players > 4:
@@ -169,6 +265,8 @@ async def find(
             "start_time": start_time,
             "end_time": end_time,
             "courses": courses,
+            "book": book,
+            "preferred_time": preferred,
             "task": None  # will be set below
         }
         job["task"] = bot.loop.create_task(
